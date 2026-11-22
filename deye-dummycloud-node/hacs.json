@@ -1,0 +1,8 @@
+{
+  "name": "Deye Dummy Cloud (Node)",
+  "description": "Local replacement for the Deye/Solarman cloud: microinverter loggers push data over TCP, published to MQTT with HA auto-discovery",
+  "url": "https://github.com/jekkos/deye-microinverter-cloud-free",
+  "repository": "https://github.com/jekkos/deye-microinverter-cloud-free",
+  "branch": "master",
+  "filename": "config.yaml"
+}

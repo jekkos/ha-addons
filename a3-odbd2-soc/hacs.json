@@ -1,0 +1,8 @@
+{
+  "name": "A3 PHEV HV SOC",
+  "description": "Reads HV SOC and available energy from Audi A3 PHEV via BLE ELM327",
+  "url": "https://github.com/jekkos/a3-odb2-soc",
+  "repository": "https://github.com/jekkos/a3-odb2-soc",
+  "branch": "master",
+  "filename": "config.json"
+}

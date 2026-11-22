@@ -1,0 +1,28 @@
+---
+name: Deye Dummy Cloud (Node)
+version: "1.1.0"
+slug: deye-dummycloud-node
+description: "Local replacement for the Deye/Solarman cloud: microinverter loggers push data over TCP, published to MQTT with HA auto-discovery"
+arch:
+  - aarch64
+  - amd64
+startup: services
+homeassistant: 2024.1.0
+image: jekkos/deye-dummycloud-node
+host_network: true
+ports:
+  10000/tcp: 10000
+options:
+  log_level: "info"
+  mqtt_broker_url: "mqtt://core-mosquitto:1883"
+  mqtt_username: ""
+  mqtt_password: ""
+  mqtt_check_cert: "false"
+  topic_prefix: "deye-dummycloud"
+schema:
+  log_level: match(trace|debug|info|warn|error|fatal)
+  mqtt_broker_url: str
+  mqtt_username: str?
+  mqtt_password: password?
+  mqtt_check_cert: bool?
+  topic_prefix: str

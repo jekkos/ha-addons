@@ -1,0 +1,6 @@
+{
+  "name": "Home Assistant Add-ons",
+  "description": "Collection of custom Home Assistant apps: A3 PHEV SOC, Deye Dummy Cloud, Solarmeter, S0PCM",
+  "url": "https://github.com/jekkos/ha-addons",
+  "maintainer": "jekkos"
+}
