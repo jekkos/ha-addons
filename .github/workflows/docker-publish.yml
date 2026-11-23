@@ -18,6 +18,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Read version
+        id: version
+        run: echo "version=$(grep '^version:' a3-odbd2-soc/config.yaml | cut -d'"' -f2)" >> $GITHUB_OUTPUT
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -37,14 +41,18 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
+            jekkos/a3-odbd2-soc:${{ steps.version.outputs.version }}
             jekkos/a3-odbd2-soc:latest
-            jekkos/a3-odbd2-soc:${{ github.sha }}
 
   build-deye-dummycloud-node:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(grep '^version:' deye-dummycloud-node/config.yaml | cut -d'"' -f2)" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -65,5 +73,5 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
+            jekkos/deye-dummycloud-node:${{ steps.version.outputs.version }}
             jekkos/deye-dummycloud-node:latest
-            jekkos/deye-dummycloud-node:${{ github.sha }}
