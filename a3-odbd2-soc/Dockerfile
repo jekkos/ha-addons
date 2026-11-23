@@ -8,6 +8,6 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt --break-system-packages
 
 COPY scripts /app
-COPY rootfs /
+COPY a3-odbd2-soc/rootfs /
 
 WORKDIR /app
