@@ -16,8 +16,7 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy application code from dummycloud/
 COPY dummycloud/. ./
 
-# Copy run script
-COPY run.sh /
+# Copy root filesystem with services
 COPY rootfs /
 
 EXPOSE 10000
