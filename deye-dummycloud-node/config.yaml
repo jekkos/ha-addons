@@ -1,6 +1,6 @@
 ---
 name: Deye Dummy Cloud (Node)
-version: "1.1.0"
+version: "1.2.0"
 slug: deye-dummycloud-node
 description: "Local replacement for the Deye/Solarman cloud: microinverter loggers push data over TCP, published to MQTT with HA auto-discovery"
 arch:
