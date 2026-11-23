@@ -33,8 +33,7 @@ jobs:
       - name: Build and push a3-odbd2-soc
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./a3-odbd2-soc/Dockerfile
+          context: ./a3-odbd2-soc
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
@@ -62,8 +61,7 @@ jobs:
       - name: Build and push deye-dummycloud-node
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./deye-dummycloud-node/Dockerfile
+          context: ./deye-dummycloud-node
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
