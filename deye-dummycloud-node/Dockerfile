@@ -18,8 +18,5 @@ COPY dummycloud/. ./
 
 # Copy run script
 COPY run.sh /
-RUN chmod a+x /run.sh
 
 EXPOSE 10000
-
-CMD [ "/run.sh" ]
