@@ -6,6 +6,7 @@ description: "Local replacement for the Deye/Solarman cloud: microinverter logge
 arch:
   - aarch64
   - amd64
+init: false
 startup: services
 homeassistant: 2024.1.0
 image: jekkos/deye-dummycloud-node
