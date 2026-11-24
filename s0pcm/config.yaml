@@ -1,0 +1,33 @@
+name: S0PCM Reader
+description: Reads S0 pulse counters (S0PCM-2/5) via USB serial and publishes to MQTT with HA auto-discovery
+version: "1.0.0"
+slug: s0pcm-reader
+url: https://github.com/ualex73/docker-s0pcm-reader
+image: jekkos/s0pcm-reader
+init: false
+arch:
+  - aarch64
+  - amd64
+startup: services
+privileged:
+  - NET_ADMIN
+options:
+  serial_port: "/dev/ttyACM0"
+  mqtt_host: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_username: ""
+  mqtt_password: ""
+  base_topic: "s0pcm-reader"
+  inputs: "1"
+  unit_of_measurement: "L"
+  meter_name: "Water Meter"
+schema:
+  serial_port: str
+  mqtt_host: str
+  mqtt_port: int
+  mqtt_username: str?
+  mqtt_password: password?
+  base_topic: str
+  inputs: str
+  unit_of_measurement: str
+  meter_name: str

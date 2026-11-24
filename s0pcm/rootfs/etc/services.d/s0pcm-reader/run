@@ -1,0 +1,60 @@
+#!/command/with-contenv bashio
+
+bashio::log.info "Starting S0PCM Reader..."
+
+# Read HA app config
+SERIAL_PORT=$(bashio::config 'serial_port' | grep -v '^#')
+MQTT_HOST=$(bashio::config 'mqtt_host' | grep -v '^#')
+MQTT_PORT=$(bashio::config 'mqtt_port' | grep -v '^#')
+MQTT_USERNAME=$(bashio::config 'mqtt_username' | grep -v '^#')
+MQTT_PASSWORD=$(bashio::config 'mqtt_password' | grep -v '^#')
+BASE_TOPIC=$(bashio::config 'base_topic' | grep -v '^#')
+INPUTS=$(bashio::config 'inputs' | grep -v '^#')
+UNIT=$(bashio::config 'unit_of_measurement' | grep -v '^#')
+METER_NAME=$(bashio::config 'meter_name' | grep -v '^#')
+
+# Export as env vars for the Python script
+export INPUTS="${INPUTS:-1}"
+export UNIT_OF_MEASUREMENT="${UNIT:-L}"
+export METER_NAME="${METER_NAME:-S0PCM Meter}"
+
+# Create configuration.yaml
+CONFIG_DIR="/data"
+mkdir -p "$CONFIG_DIR"
+
+cat > "$CONFIG_DIR/configuration.yaml" << EOF
+log:
+  level: info
+mqtt:
+  host: ${MQTT_HOST:-core-mosquitto}
+  port: ${MQTT_PORT:-1883}
+  base_topic: ${BASE_TOPIC:-s0pcm-reader}
+  ${MQTT_USERNAME:+username: ${MQTT_USERNAME}}
+  ${MQTT_PASSWORD:+password: ${MQTT_PASSWORD}}
+  retain: yes
+  split_topic: yes
+serial:
+  port: ${SERIAL_PORT:-/dev/ttyACM0}
+  baudrate: 9600
+  parity: even
+  stopbits: 1
+  bytesize: 7
+  connect_retry: 5
+s0pcm:
+  publish_onchange: yes
+EOF
+
+bashio::log.info "Serial port: $SERIAL_PORT"
+bashio::log.info "MQTT: $MQTT_HOST:$MQTT_PORT"
+bashio::log.info "Base topic: $BASE_TOPIC"
+bashio::log.info "Inputs: $INPUTS"
+bashio::log.info "Unit: $UNIT"
+bashio::log.info "Meter name: $METER_NAME"
+
+# Check MQTT connectivity
+if ! timeout 3 bash -c "echo > /dev/tcp/$MQTT_HOST/$MQTT_PORT" 2>/dev/null; then
+    bashio::log.warning "Cannot connect to MQTT broker at $MQTT_HOST:$MQTT_PORT"
+fi
+
+# Run the Python script
+exec python3 /app/s0pcm-reader.py -c "$CONFIG_DIR"
