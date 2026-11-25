@@ -12,11 +12,13 @@ BASE_TOPIC=$(bashio::config 'base_topic' | grep -v '^#')
 INPUTS=$(bashio::config 'inputs' | grep -v '^#')
 UNIT=$(bashio::config 'unit_of_measurement' | grep -v '^#')
 METER_NAME=$(bashio::config 'meter_name' | grep -v '^#')
+INITIAL_TOTAL=$(bashio::config 'initial_total' | grep -v '^#')
 
 # Export as env vars for the Python script
 export INPUTS="${INPUTS:-1}"
 export UNIT_OF_MEASUREMENT="${UNIT:-L}"
 export METER_NAME="${METER_NAME:-S0PCM Meter}"
+export INITIAL_TOTAL="${INITIAL_TOTAL:-}"
 
 # Create configuration.yaml
 CONFIG_DIR="/data"
@@ -43,6 +45,39 @@ serial:
 s0pcm:
   publish_onchange: yes
 EOF
+
+# Seed measurement.yaml on first run
+if [ ! -f "$CONFIG_DIR/measurement.yaml" ]; then
+    bashio::log.info "First run - seeding measurement.yaml..."
+    cat > "$CONFIG_DIR/measurement.yaml" << EOF
+date: $(date +%Y-%m-%d)
+EOF
+
+    # Parse initial_total (format: "1:370689" or "1:370689,2:1500")
+    if [ -n "$INITIAL_TOTAL" ]; then
+        IFS=',' read -ra pairs <<< "$INITIAL_TOTAL"
+        for pair in "${pairs[@]}"; do
+            inp=$(echo "$pair" | cut -d':' -f1)
+            total=$(echo "$pair" | cut -d':' -f2)
+            if [ -n "$inp" ] && [ -n "$total" ]; then
+                cat >> "$CONFIG_DIR/measurement.yaml" << EOF
+${inp}:
+  pulsecount: ${total}
+  total: ${total}
+  today: 0
+  yesterday: 0
+  enabled: true
+  name: "Input ${inp}"
+EOF
+                bashio::log.info "Seeded input $inp with total: $total"
+            fi
+        done
+    else
+        bashio::log.info "No initial_total set. Current total will start at 0."
+        bashio::log.info "To set the initial total, update the app options or publish to MQTT: ${BASE_TOPIC:-s0pcm-reader}/command/set_total"
+        bashio::log.info "Payload: {\"input\": 1, \"total\": <value>}"
+    fi
+fi
 
 bashio::log.info "Serial port: $SERIAL_PORT"
 bashio::log.info "MQTT: $MQTT_HOST:$MQTT_PORT"

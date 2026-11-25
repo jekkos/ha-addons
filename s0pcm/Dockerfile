@@ -11,3 +11,5 @@ COPY app/ /app/
 COPY rootfs /
 
 WORKDIR /app
+
+ENTRYPOINT ["/init"]

@@ -20,3 +20,5 @@ COPY dummycloud/. ./
 COPY rootfs /
 
 EXPOSE 10000
+
+ENTRYPOINT ["/init"]

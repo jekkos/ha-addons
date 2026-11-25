@@ -21,6 +21,7 @@ options:
   inputs: "1"
   unit_of_measurement: "L"
   meter_name: "Water Meter"
+  initial_total: ""
 schema:
   serial_port: str
   mqtt_host: str
@@ -31,3 +32,4 @@ schema:
   inputs: str
   unit_of_measurement: str
   meter_name: str
+  initial_total: str?

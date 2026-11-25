@@ -11,3 +11,5 @@ COPY scripts /app
 COPY rootfs /
 
 WORKDIR /app
+
+ENTRYPOINT ["/init"]
