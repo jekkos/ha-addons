@@ -1,0 +1,63 @@
+#!/command/with-contenv bashio
+
+bashio::log.info "Starting Aurora Solarmeter..."
+
+# Read HA app config
+LOG_LEVEL=$(bashio::config 'log_level' | grep -v '^#')
+SERIAL_DEVICE=$(bashio::config 'serial_device' | grep -v '^#')
+MQTT_BROKER=$(bashio::config 'mqtt_broker' | grep -v '^#')
+MQTT_PORT=$(bashio::config 'mqtt_port' | grep -v '^#')
+MQTT_TOPIC=$(bashio::config 'mqtt_topic' | grep -v '^#')
+MQTT_USER=$(bashio::config 'mqtt_user' | grep -v '^#')
+MQTT_PASSWORD=$(bashio::config 'mqtt_password' | grep -v '^#')
+MQTT_TLS_CAFILE=$(bashio::config 'mqtt_tls_cafile' | grep -v '^#')
+MQTT_TLS_CAPATH=$(bashio::config 'mqtt_tls_capath' | grep -v '^#')
+PAYMENT_KWH=$(bashio::config 'payment_kwh' | grep -v '^#')
+MAX_READ_ITERATIONS=$(bashio::config 'max_read_iterations' | grep -v '^#')
+CHARACTER_READ_DELAY=$(bashio::config 'character_read_delay_us' | grep -v '^#')
+
+bashio::log.info "Serial: $SERIAL_DEVICE"
+bashio::log.info "MQTT: $MQTT_BROKER:$MQTT_PORT"
+bashio::log.info "Topic: $MQTT_TOPIC"
+bashio::log.info "Payment/kWh: $PAYMENT_KWH"
+
+# Generate config file
+CONFIG="/data/solarmeter.conf"
+mkdir -p /data
+
+cat > "$CONFIG" << EOF
+log_level ${LOG_LEVEL:-config,json}
+serial_device ${SERIAL_DEVICE:-/dev/ttyUSB0}
+mqtt_broker ${MQTT_BROKER:-core-mosquitto}
+mqtt_port ${MQTT_PORT:-1883}
+mqtt_topic ${MQTT_TOPIC:-solarmeter}
+EOF
+
+# Add optional MQTT auth
+if [ -n "$MQTT_USER" ] && [ -n "$MQTT_PASSWORD" ]; then
+    echo "mqtt_user $MQTT_USER" >> "$CONFIG"
+    echo "mqtt_password $MQTT_PASSWORD" >> "$CONFIG"
+fi
+
+# Add optional TLS
+if [ -n "$MQTT_TLS_CAFILE" ]; then
+    echo "mqtt_tls_cafile $MQTT_TLS_CAFILE" >> "$CONFIG"
+fi
+if [ -n "$MQTT_TLS_CAPATH" ]; then
+    echo "mqtt_tls_capath $MQTT_TLS_CAPATH" >> "$CONFIG"
+fi
+
+# Required options
+echo "payment_kwh ${PAYMENT_KWH:-0.0}" >> "$CONFIG"
+echo "max_read_iterations ${MAX_READ_ITERATIONS:-2000}" >> "$CONFIG"
+echo "character_read_delay_\u00B5s ${CHARACTER_READ_DELAY:-60}" >> "$CONFIG"
+
+bashio::log.info "Config written to $CONFIG"
+
+# Check MQTT connectivity
+if ! timeout 3 bash -c "echo > /dev/tcp/$MQTT_BROKER/$MQTT_PORT" 2>/dev/null; then
+    bashio::log.warning "Cannot connect to MQTT broker at $MQTT_BROKER:$MQTT_PORT"
+fi
+
+# Run the solarmeter binary
+exec /usr/local/bin/solarmeter -c "$CONFIG"
