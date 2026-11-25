@@ -59,12 +59,12 @@ bool Solarmeter::Setup(const std::string &config)
     ErrorMessage = Cfg->GetErrorMessage();
     return false;
   }
-  if (!(Cfg->KeyExists("max_read_iterations") && !Cfg->KeyExists("character_read_delay_µs")))
+  if (!Cfg->KeyExists("max_read_iterations"))
   {
     ErrorMessage = Cfg->GetErrorMessage();
     return false;
   }
-  if (!Inverter->Setup(Cfg->GetValue("serial_device"), B19200, StringTo<int>(Cfg->GetValue("max_read_iterations")), StringTo<int>(Cfg->GetValue("character_read_delay_µs"))))
+  if (!Inverter->Setup(Cfg->GetValue("serial_device"), B19200))
   {
     ErrorMessage = Inverter->GetErrorMessage();
     return false;
