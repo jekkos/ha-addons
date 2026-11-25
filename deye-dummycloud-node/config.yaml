@@ -3,6 +3,7 @@ name: Deye Dummy Cloud (Node)
 version: "1.3.1"
 slug: deye-dummycloud-node
 description: "Local replacement for the Deye/Solarman cloud: microinverter loggers push data over TCP, published to MQTT with HA auto-discovery"
+icon: https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/deye_cloud/icon.png
 arch:
   - aarch64
   - amd64
