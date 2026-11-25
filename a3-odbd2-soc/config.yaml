@@ -1,14 +1,13 @@
-name: A3 PHEV HV SOC
-description: Reads HV SOC and available energy from Audi A3 PHEV via BLE ELM327
+name: Audi A3 PHEV Battery
+description: Reads HV battery SOC and available energy from Audi A3 PHEV via BLE
 version: "1.2.1"
 slug: a3-odbd2-soc
-url: https://github.com/jekkos/a3-odb2-soc
+url: https://github.com/jekkos/ha-addons
 image: jekkos/a3-odbd2-soc
 init: false
 arch:
   - aarch64
   - amd64
-  - armhf
   - armv7
 startup: services
 privileged:
