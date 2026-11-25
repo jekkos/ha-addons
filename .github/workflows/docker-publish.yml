@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./a3-odbd2-soc
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             jekkos/a3-odbd2-soc:${{ steps.version.outputs.version }}
@@ -70,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./deye-dummycloud-node
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             jekkos/deye-dummycloud-node:${{ steps.version.outputs.version }}
@@ -102,7 +102,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./s0pcm
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             jekkos/s0pcm-reader:${{ steps.version.outputs.version }}
@@ -134,7 +134,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./solarmeter
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             jekkos/solarmeter:${{ steps.version.outputs.version }}
