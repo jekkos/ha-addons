@@ -7,6 +7,7 @@ BLE_MAC=$(bashio::config 'ble_mac')
 OBD_PID=$(bashio::config 'obd_pid')
 READ_WAIT=$(bashio::config 'read_wait')
 READ_RETRIES=$(bashio::config 'read_retries')
+POLL_INTERVAL=$(bashio::config 'poll_interval')
 NET_USABLE_KWH=$(bashio::config 'net_usable_kwh')
 MQTT_HOST=$(bashio::config 'mqtt_host')
 MQTT_PORT=$(bashio::config 'mqtt_port')
@@ -22,26 +23,19 @@ bashio::log.info "BLE MAC: $BLE_MAC"
 bashio::log.info "OBD PID: $OBD_PID"
 bashio::log.info "MQTT: $MQTT_HOST:$MQTT_PORT"
 bashio::log.info "Net usable kWh: $NET_USABLE_KWH"
-
-# Check MQTT connectivity
-bashio::log.info "Checking MQTT broker at $MQTT_HOST:$MQTT_PORT ..."
-if ! timeout 3 bash -c "echo > /dev/tcp/$MQTT_HOST/$MQTT_PORT" 2>/dev/null; then
-    bashio::log.error "Cannot connect to MQTT broker at $MQTT_HOST:$MQTT_PORT"
-    bashio::log.error "Enable built-in Mosquitto in HA settings or configure external MQTT."
-    exit 1
-fi
-bashio::log.info "MQTT broker reachable"
+bashio::log.info "Poll interval: ${POLL_INTERVAL}s"
 
 # Export env vars for Python script
 export BLE_MAC
 export OBD_PID
 export READ_WAIT
 export READ_RETRIES
+export POLL_INTERVAL
 export NET_USABLE_KWH
 export MQTT_HOST
 export MQTT_PORT
 export MQTT_USERNAME
 export MQTT_PASSWORD
 
-# Run the Python script
+# Run the Python script (loops continuously)
 exec python3 /app/ble_soc_mqtt.py

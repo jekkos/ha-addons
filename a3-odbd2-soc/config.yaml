@@ -1,6 +1,6 @@
 name: Audi A3 PHEV Battery
 description: Reads HV battery SOC and available energy from Audi A3 PHEV via BLE
-version: "1.2.1"
+version: "1.3.0"
 slug: a3-odbd2-soc
 url: https://github.com/jekkos/ha-addons
 image: jekkos/a3-odbd2-soc
@@ -13,12 +13,15 @@ privileged:
   - NET_ADMIN
   - BLUETOOTH
 host_network: true
+devices:
+  - /dev/btusb
 ports: {}
 options:
   ble_mac: "00:10:CC:4F:36:03"
   obd_pid: "5B"
   read_wait: 3.0
   read_retries: 3
+  poll_interval: 300
   mqtt_host: "core-mosquitto"
   mqtt_port: 1883
   mqtt_username: ""
@@ -29,6 +32,7 @@ schema:
   obd_pid: str
   read_wait: float
   read_retries: int
+  poll_interval: int
   mqtt_host: str
   mqtt_port: int
   mqtt_username: str

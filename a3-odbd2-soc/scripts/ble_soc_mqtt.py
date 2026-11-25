@@ -159,6 +159,8 @@ async def main() -> int:
     parser.add_argument("--wait", type=float, default=None, help="Connection wait time")
     parser.add_argument("--retries", type=int, default=None, help="Number of retries")
     parser.add_argument("--net-kwh", default=None, help="Net usable HV battery capacity in kWh")
+    parser.add_argument("--interval", type=float, default=None, help="Poll interval in seconds")
+    parser.add_argument("--once", action="store_true", help="Read once and exit")
     parser.add_argument("--print", action="store_true", help="Also print the result")
     args = parser.parse_args()
 
@@ -167,9 +169,43 @@ async def main() -> int:
     wait_time = args.wait if args.wait is not None else env_float("READ_WAIT", 3.0)
     retries = args.retries if args.retries is not None else int(env("READ_RETRIES", "3"))
     net_kwh = args.net_kwh or env("NET_USABLE_KWH")
+    interval = args.interval if args.interval is not None else env_float("POLL_INTERVAL", 300.0)
 
     load_env_file(ENV_FILE)
 
+    if args.once:
+        return await read_once(mac, pid, wait_time, retries, net_kwh, args.print)
+
+    print(f"[a3-ble-soc] Starting continuous monitor (interval={interval:.0f}s, mac={mac}, pid={pid})")
+    consecutive_failures = 0
+    while True:
+        try:
+            result = await read_soc(mac, pid, wait_time, retries)
+            payload = str(result["soc_pct"])
+            usable_kwh = net_usable_kwh(net_kwh)
+            kwh_payload = kwh_from_soc(float(payload), usable_kwh)
+            publish_mqtt(payload, online=True, kwh_payload=kwh_payload)
+            consecutive_failures = 0
+            if args.print:
+                print(json.dumps({**result, "net_usable_kwh": usable_kwh, "estimated_available_kwh": kwh_payload}, indent=2))
+            print(f"[a3-ble-soc] SOC={payload}% kWh={kwh_payload}")
+        except Exception as exc:
+            consecutive_failures += 1
+            print(f"[a3-ble-soc] Read failed ({consecutive_failures} consecutive): {exc}")
+            try:
+                publish_mqtt("0", online=False)
+            except Exception:
+                pass
+            if consecutive_failures >= 10:
+                backoff = min(interval, 60)
+                print(f"[a3-ble-soc] Too many failures, backing off {backoff}s")
+                await asyncio.sleep(backoff)
+                consecutive_failures = 0
+
+        await asyncio.sleep(interval)
+
+
+async def read_once(mac: str, pid: str, wait_time: float, retries: int, net_kwh: Optional[str], do_print: bool) -> int:
     try:
         result = await read_soc(mac, pid, wait_time, retries)
     except Exception as exc:
@@ -178,7 +214,7 @@ async def main() -> int:
             publish_mqtt(payload, online=False)
         except Exception as mqtt_exc:
             raise SystemExit(f"SOC read failed: {exc}; MQTT offline publish failed: {mqtt_exc}") from mqtt_exc
-        if args.print:
+        if do_print:
             print(f"soc=unavailable error={exc}")
         return 1
 
@@ -187,7 +223,7 @@ async def main() -> int:
     kwh_payload = kwh_from_soc(float(payload), usable_kwh)
     publish_mqtt(payload, online=True, kwh_payload=kwh_payload)
 
-    if args.print:
+    if do_print:
         print(json.dumps({**result, "net_usable_kwh": usable_kwh, "estimated_available_kwh": kwh_payload}, indent=2))
     return 0
 
