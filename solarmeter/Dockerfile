@@ -1,25 +1,41 @@
-FROM ghcr.io/home-assistant/base:3.24
+# Stage 1: Build C++ binary
+FROM --platform=$BUILDPLATFORM gcc:12-bookworm AS builder
 
-# Install build dependencies
-RUN apk add --no-cache gcc g++ musl-dev mosquitto-dev git
+ARG TARGETARCH
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git make g++ libmosquitto-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Clone and build libabbaurora
 RUN git clone --depth 1 https://github.com/ahpohl/libabbaurora.git /tmp/libabbaurora \
     && cd /tmp/libabbaurora \
     && sed -i 's/ln\s-sr\(.*\)/ln -s \1/g' Makefile \
-    && PREFIX=/usr make install \
+    && PREFIX=/tmp/stage make install \
     && rm -rf /tmp/libabbaurora
 
 # Build solarmeter
 COPY include /tmp/solarmeter/include
 COPY src /tmp/solarmeter/src
 COPY Makefile /tmp/solarmeter/Makefile
-COPY resources/config /tmp/solarmeter/resources/config
 WORKDIR /tmp/solarmeter
-RUN make install PREFIX=/usr && rm -rf /tmp/solarmeter
+RUN LDFLAGS="-L/tmp/stage/lib" CFLAGS="-I/tmp/stage/include" \
+    make install PREFIX=/tmp/stage && rm -rf /tmp/solarmeter
+
+# Stage 2: Runtime
+FROM debian:bookworm-slim
+
+# Install s6-overlay
+COPY --from=ghcr.io/just-containers/s6-overlay:latest / /
 
 # Install runtime dependencies
-RUN apk add --no-cache mosquitto-libs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmosquitto1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy built binary and libs
+COPY --from=builder /tmp/stage/bin/solarmeter /usr/local/bin/solarmeter
+COPY --from=builder /tmp/stage/lib/libabbaurora.so* /usr/local/lib/
+RUN ldconfig
 
 # Copy example config
 COPY resources/config/solarmeter_example.conf /etc/solarmeter.conf
