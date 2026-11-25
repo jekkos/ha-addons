@@ -1,7 +1,7 @@
 FROM --platform=$BUILDPLATFORM ghcr.io/home-assistant/base:3.24
 
 # Install build dependencies
-RUN apk add --no-cache gcc g++ musl-dev mosquitto-dev git
+RUN apk add --no-cache gcc g++ musl-dev mosquitto-dev git make
 
 # Clone and build libabbaurora
 RUN git clone --depth 1 https://github.com/ahpohl/libabbaurora.git /tmp/libabbaurora \
