@@ -1,10 +1,11 @@
 name: Audi A3 PHEV Battery (BLE OBD)
 description: Reads HV battery SOC % and available energy from Audi A3/S3/RS3 PHEV via Bluetooth LE OBD-II (OBD2). No cloud, fully local.
-version: "1.3.0"
+version: "1.3.1"
 slug: a3-odbd2-soc
 url: https://github.com/jekkos/ha-addons
 image: jekkos/a3-odbd2-soc
 init: false
+homeassistant: 2024.1.0
 arch:
   - aarch64
   - amd64
@@ -13,9 +14,6 @@ privileged:
   - NET_ADMIN
   - BLUETOOTH
 host_network: true
-devices:
-  - /dev/btusb
-ports: {}
 options:
   ble_mac: "00:10:CC:4F:36:03"
   obd_pid: "5B"
